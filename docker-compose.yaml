@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    restart: always
+    volumes:
+      - ./src/backend:/var/www/html/
+    depends_on:
+      - database
+
+  webserver:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./src/backend:/var/www/html/
+      - ./src/nginx/conf.d/:/etc/nginx/conf.d/
+    depends_on:
+      - app
+
+  database:
+    image: mysql:8
+    ports:
+      - "${DB_PORT}:3306"
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db-volume:/var/lib/mysql
+
+volumes:
+  db-volume:
