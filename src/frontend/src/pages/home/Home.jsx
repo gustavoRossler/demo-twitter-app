@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useSelector, } from 'react-redux';
-import { Container, FormControl, Button, Spinner } from 'react-bootstrap';
+import { Container, FormControl, Button, Spinner, Pagination } from 'react-bootstrap';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Header from "../../components/Header/Header";
@@ -17,12 +17,15 @@ function Home() {
   const [posts, setPosts] = useState(null);
   const [loadingPosts, setLoadingPosts] = useState(false);
   const [errorPosts, setErrorPosts] = useState(null);
+  const [postsTotalItems, setPostsTotalItems] = useState(0);
+  const [postsCurrentPage, setPostsCurrentPage] = useState(0);
 
   const getPosts = async () => {
     try {
       setLoadingPosts(true);
-      const response = await postsApi.getPosts({ authorId: user.id, fromUsersFollowing: true });
+      const response = await postsApi.getPosts({ authorId: user.id, fromUsersFollowing: true, page: postsCurrentPage });
       setPosts(response.posts);
+      setPostsTotalItems(response.totalItems);
     } catch (error) {
       console.log(error);
     } finally {
@@ -41,6 +44,25 @@ function Home() {
       setSearchParams(searchParams);
     }
   }, []);
+
+  const paginationItems = () => {
+    const items = [];
+    const pages = Math.ceil(postsTotalItems / 10);
+    for (let i = 0; i < pages; i++) {
+      items.push(
+        <Pagination.Item key={i} active={i === postsCurrentPage} onClick={() => setPostsCurrentPage(i)}>
+          {i + 1}
+        </Pagination.Item>
+      );
+    }
+    return items;
+  }
+
+  useEffect(() => {
+    if (posts && !loadingPosts) {
+      getPosts();
+    }
+  }, [postsCurrentPage]);
 
   return (
     <>
@@ -67,6 +89,7 @@ function Home() {
           {!loadingPosts && posts && posts.map(post => (
             <Post post={post} key={post.id} />
           ))}
+          {!loadingPosts && posts && <Pagination>{paginationItems()}</Pagination>}
         </div>
 
       </Container>

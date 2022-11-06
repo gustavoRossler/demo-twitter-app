@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useState } from "react";
-import { Button, Container, Spinner, Table } from "react-bootstrap";
+import { Button, Container, Spinner, Pagination } from "react-bootstrap";
 import { useSelector, useDispatch } from "react-redux";
 import { Link, useParams } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
@@ -21,6 +21,8 @@ function User() {
   const [posts, setPosts] = useState(null);
   const [loadingPosts, setLoadingPosts] = useState(false);
   const [errorPosts, setErrorPosts] = useState(null);
+  const [postsTotalItems, setPostsTotalItems] = useState(0);
+  const [postsCurrentPage, setPostsCurrentPage] = useState(0);
 
   const user = useSelector(state => state.auth.user);
 
@@ -45,8 +47,9 @@ function User() {
   const getPosts = async () => {
     try {
       setLoadingPosts(true);
-      const response = await postsApi.getPosts({ authorId: currentUser.id });
+      const response = await postsApi.getPosts({ authorId: currentUser.id, page: postsCurrentPage });
       setPosts(response.posts);
+      setPostsTotalItems(response.totalItems);
     } catch (error) {
       setErrorPosts(error.response.data.message);
     } finally {
@@ -82,6 +85,25 @@ function User() {
     }
   }
 
+  const paginationItems = () => {
+    const items = [];
+    const pages = Math.ceil(postsTotalItems / 10);
+    for (let i = 0; i < pages; i++) {
+      items.push(
+        <Pagination.Item key={i} active={i === postsCurrentPage} onClick={() => setPostsCurrentPage(i)}>
+          {i + 1}
+        </Pagination.Item>
+      );
+    }
+    return items;
+  }
+
+  useEffect(() => {
+    if (posts && !loadingPosts) {
+      getPosts();
+    }
+  }, [postsCurrentPage]);
+
   return (
     <>
       <ToastContainer />
@@ -101,7 +123,7 @@ function User() {
               <div className="d-flex gap-2 align-items-center">
                 <Link className="border-end pe-2" to={"/followers/" + currentUser.username}>Followed by ({currentUser.followers?.length})</Link>
                 <Link className="border-end pe-2" to={"/following/" + currentUser.username}>Following ({currentUser.following?.length})</Link>
-                {!user.following.find(item => item.id === currentUser.id) && (
+                {!user.following.find(item => item.id === currentUser.id) && currentUser.id !== user.id && (
                   <Button onClick={() => followUser(currentUser)} disabled={loadingFollow}>
                     {loadingFollow && <Spinner animation="border" size="sm" />}
                     {!loadingFollow && "Follow"}
@@ -120,6 +142,7 @@ function User() {
               {!loadingPosts && posts && posts.map(post => (
                 <Post post={post} key={post.id} />
               ))}
+              {!loadingPosts && posts && <Pagination>{paginationItems()}</Pagination>}
             </div>
           </>
         )}
