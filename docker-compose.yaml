@@ -2,29 +2,8 @@ version: "3.8"
 
 services:
 
-  app:
-    build:
-      context: .
-      dockerfile: docker/php/Dockerfile
-    restart: always
-    volumes:
-      - ./src/backend:/var/www/html/
-    depends_on:
-      - database
-
-  webserver:
-    image: nginx:alpine
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./src/backend:/var/www/html/
-      - ./src/nginx/conf.d/:/etc/nginx/conf.d/
-    depends_on:
-      - app
-
-  database:
+  twitter-app-database:
+    container_name: twitter-app-database
     image: mysql:8
     ports:
       - "${DB_PORT}:3306"
@@ -36,6 +15,33 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD}
     volumes:
       - db-volume:/var/lib/mysql
+
+  twitter-app-backend:
+    container_name: twitter-app-backend
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    restart: always
+    volumes:
+      - ./src/backend:/var/www/html/
+    depends_on:
+      - twitter-app-database
+    links:
+      - twitter-app-database
+
+  twitter-app-api-proxy:
+    container_name: twitter-app-api-proxy
+    image: nginx:alpine
+    restart: always
+    ports:
+      - "3007:80"
+    volumes:
+      - ./src/backend:/var/www/html/
+      - ./src/nginx/conf.d/:/etc/nginx/conf.d/
+    depends_on:
+      - twitter-app-backend
+    links:
+      - twitter-app-backend
 
 volumes:
   db-volume:
