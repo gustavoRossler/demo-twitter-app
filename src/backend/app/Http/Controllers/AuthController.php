@@ -29,6 +29,8 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
+        $user->load('followers');
+        $user->load('following');
 
         return response()->json([
             'status' => 'success',
@@ -59,13 +61,13 @@ class AuthController extends Controller
                 'token' => $token,
                 'type' => 'bearer',
             ]
-        ]);
+        ], 201);
     }
 
     public function logout()
     {
         Auth::logout();
-        
+
         return response()->json([
             'status' => 'success',
             'message' => 'Successfully logged out',
