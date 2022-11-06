@@ -57,6 +57,7 @@ class PostsController extends Controller
 
         // Fetch the items list paginated
         $posts = $this->getPostsList($authorId, $userId, $fromUsersFollowing)
+            ->with('author')
             ->orderBy('created_at', 'desc')
             ->offset($page * $pageSize)
             ->limit($pageSize)

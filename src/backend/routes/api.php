@@ -29,6 +29,7 @@ Route::get('/refresh-token', [AuthController::class, 'refresh']);
 Route::prefix('/users')->middleware('auth:api')->group(function () {
     Route::post('/add-following', [UsersController::class, 'addFollowingUser']);
     Route::post('/remove-following', [UsersController::class, 'removeFollowingUser']);
+    Route::get('/find', [UsersController::class, 'find']);
 });
 
 Route::prefix('/posts')->middleware('auth:api')->group(function () {

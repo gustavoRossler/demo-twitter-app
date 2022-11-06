@@ -20,7 +20,7 @@ services:
     container_name: twitter-app-backend
     build:
       context: .
-      dockerfile: docker/php/Dockerfile
+      dockerfile: docker/backend/Dockerfile
     restart: always
     volumes:
       - ./src/backend:/var/www/html/
@@ -42,6 +42,22 @@ services:
       - twitter-app-backend
     links:
       - twitter-app-backend
+
+  twitter-app-frontend:
+    container_name: twitter-app-frontend
+    restart: always
+    build:
+      dockerfile: ./docker/frontend/Dockerfile
+      context: .
+    volumes:
+      - ./src/frontend:/app
+      - /app/node_modules
+      - /app/build
+      - /app/cache
+    ports:
+      - 3008:3000
+    depends_on:
+      - twitter-app-api-proxy
 
 volumes:
   db-volume:
