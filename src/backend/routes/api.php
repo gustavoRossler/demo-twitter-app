@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PostsController;
+use App\Http\Controllers\UsersController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,13 +17,21 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+
 Route::get('/', function (Request $request) {
     return 'API v.1';
 });
-Route::post('/users', [\App\Http\Controllers\AuthController::class, 'register']);
-Route::post('/login', [\App\Http\Controllers\AuthController::class, 'login']);
-Route::get('/logout', [\App\Http\Controllers\AuthController::class, 'logout']);
-Route::get('/refresh-token', [\App\Http\Controllers\AuthController::class, 'refresh']);
+Route::post('/users', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+Route::get('/logout', [AuthController::class, 'logout']);
+Route::get('/refresh-token', [AuthController::class, 'refresh']);
+
+Route::prefix('/users')->middleware('auth:api')->group(function () {
+    Route::post('/add-following', [UsersController::class, 'addFollowingUser']);
+    Route::post('/remove-following', [UsersController::class, 'removeFollowingUser']);
+});
+
+Route::prefix('/posts')->middleware('auth:api')->group(function () {
+    Route::get('/', [PostsController::class, 'list']);
+    Route::post('/', [PostsController::class, 'create']);
+});
