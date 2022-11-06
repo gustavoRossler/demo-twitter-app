@@ -44,6 +44,22 @@ class User extends Authenticatable implements JWTSubject
     }
 
     /**
+     * List of users that are followers of current user
+     */
+    public function followers()
+    {
+        return $this->belongsToMany(User::class, 'users_followers', 'followed_user_id', 'follower_user_id');
+    }
+
+    /**
+     * List of users that current user are following
+     */
+    public function following()
+    {
+        return $this->belongsToMany(User::class, 'users_followers', 'follower_user_id', 'followed_user_id');
+    }
+
+    /**
      * The attributes that should be cast.
      *
      * @var array<string, string>
