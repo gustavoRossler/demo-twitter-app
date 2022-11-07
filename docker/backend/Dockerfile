@@ -45,7 +45,7 @@ RUN chown -R www-data:www-data \
 
 RUN composer install
 
-COPY ./docker/php/run.sh /tmp
+COPY ./docker/backend/run.sh /tmp
 
 EXPOSE 9000
 
